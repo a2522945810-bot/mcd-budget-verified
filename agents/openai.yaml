@@ -1,0 +1,13 @@
+interface:
+  display_name: 麦当劳预算配餐助手
+  short_description: 按预算和口味筛选麦当劳餐品，核验优惠后的价格，明确标注数据来源与限制
+  default_prompt: 使用 $mcd-budget-verified 帮我在25元预算内选择一人到店取餐组合，不要可乐，并核验优惠后的价格。
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true
