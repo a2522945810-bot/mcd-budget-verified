@@ -1,0 +1,14 @@
+{
+  "source":"synthetic", "currency":"CNY", "service":"pickup", "store_id":"DEMO_STORE_NOT_REAL",
+  "fetched_at":"2026-10-11T08:00:00+00:00",
+  "notice":"全部餐品、编码、优惠券和价格均为虚构，并非麦当劳菜单。demo命令会刷新合成时间。",
+  "offers":[
+    {"id":"demo-main","name":"演示鸡肉堡","kind":"main","available":true,"components_known":true,"components":["鸡肉堡"],"selections":[{"item_code":"DEMO_MAIN","quantity":1,"options":{}}],"coupon_ids":[],"reference_minor":1800},
+    {"id":"demo-main-coupon","name":"演示鸡肉堡优惠项","kind":"main","available":true,"components_known":true,"components":["鸡肉堡"],"selections":[{"item_code":"DEMO_MAIN","quantity":1,"options":{}}],"coupon_ids":["DEMO_COUPON_5"],"reference_minor":1800},
+    {"id":"demo-side","name":"演示小份薯条","kind":"side","available":true,"components_known":true,"components":["薯条"],"selections":[{"item_code":"DEMO_SIDE","quantity":1,"options":{}}],"coupon_ids":[],"reference_minor":800},
+    {"id":"demo-water","name":"演示瓶装水","kind":"drink","available":true,"components_known":true,"components":["水"],"selections":[{"item_code":"DEMO_WATER","quantity":1,"options":{}}],"coupon_ids":[],"reference_minor":500},
+    {"id":"demo-meal-cola","name":"演示套餐","kind":"meal","available":true,"components_known":true,"components":["鸡肉堡","薯条","可乐"],"selections":[{"item_code":"DEMO_MEAL","quantity":1,"options":{"drink":"DEMO_COLA"}}],"coupon_ids":[],"reference_minor":2300},
+    {"id":"demo-unknown","name":"组成未确认演示套餐","kind":"meal","available":true,"components_known":false,"components":[],"selections":[{"item_code":"DEMO_UNKNOWN","quantity":1,"options":{}}],"coupon_ids":[],"reference_minor":1200},
+    {"id":"demo-unavailable","name":"已售罄演示主餐","kind":"main","available":false,"components_known":true,"components":["主餐"],"selections":[{"item_code":"DEMO_SOLDOUT","quantity":1,"options":{}}],"coupon_ids":[],"reference_minor":1000}
+  ]
+}
