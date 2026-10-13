@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+private/
+local/
+tool-manifest.json
+quote*.json
+plan.json
+menu.json
+*.log
