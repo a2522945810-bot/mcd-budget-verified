@@ -209,6 +209,7 @@ def rank(plan, quote_bundle, now=None):
     return {'source': plan['source'], 'status': status, 'store_id': plan['store_id'],
             'budget_minor': plan['budget_minor'], 'generated_candidates': len(candidates),
             'valid_quotes': priced, 'unpriced_candidates': unpriced, 'over_budget_candidates': over_budget,
+            'all_generated_candidates_priced': unpriced == 0,
             'results': distinct[:3], 'rejected_quotes': rejected, 'scope_note': plan['scope_note']}
 
 
@@ -216,6 +217,8 @@ def markdown(result):
     label = '模拟演示｜商品、优惠和价格均为虚构，不可用于真实消费' if result['source']=='synthetic' else '实时调用结果整理｜来源由调用方提供，本地脚本未独立认证；不构成保价'
     lines=[f'# 预算配餐结果\n\n{label}\n', f"门店：{result['store_id']}；预算：{result['budget_minor']/100:.2f}元。",
            f"本轮生成{result['generated_candidates']}个候选，有效报价{result['valid_quotes']}个，未核价{result['unpriced_candidates']}个。"]
+    if result['results'] and result['unpriced_candidates']:
+        lines.append('仅展示已核价的部分候选；其他候选可能更合适，不能据此断定没有更好的预算内组合。')
     if result['results']:
         for i,r in enumerate(result['results'],1):
             names='＋'.join(x['name'] for x in r['cart']['offers'])

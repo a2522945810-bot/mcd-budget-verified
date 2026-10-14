@@ -63,6 +63,15 @@ class BudgetTests(unittest.TestCase):
         self.assertEqual(result['status'],'insufficient_quotes')
         self.assertEqual(result['unpriced_candidates'],9)
 
+    def test_partial_found_warns_about_unpriced_alternatives(self):
+        side=next(c for c in self.plan['candidates'] if
+                  [x['offer_id'] for x in c['cart']['offers']] == ['demo-side'])
+        result=b.rank(self.plan,{'quotes':[self.quote(side,payable_minor=800)]},self.now)
+        self.assertEqual(result['status'],'found')
+        self.assertFalse(result['all_generated_candidates_priced'])
+        self.assertEqual(result['unpriced_candidates'],9)
+        self.assertIn('其他候选可能更合适',b.markdown(result))
+
     def test_all_over_budget(self):
         result=b.rank(self.plan,{'quotes':[self.quote(c,payable_minor=3000) for c in self.plan['candidates']]},self.now)
         self.assertEqual(result['status'],'over_budget')

@@ -50,6 +50,6 @@ python scripts/budget.py rank --plan private/plan.json --quotes private/quotes.j
 
 ## 输出含义
 
-found：至少一个有效且预算内的结果；insufficient_quotes：没有可推荐结果且仍有候选未获得有效报价；over_budget：本轮全部候选都有效核价且均超预算；no_candidates：偏好/组成规则下没有候选。
+found：至少一个有效且预算内的结果，但不表示其余候选已核价；insufficient_quotes：没有可推荐结果且仍有候选未获得有效报价；over_budget：本轮全部候选都有效核价且均超预算；no_candidates：偏好/组成规则下没有候选。`all_generated_candidates_priced` 仅表示本轮生成的候选全部有有效报价，不能扩展为全菜单覆盖。`found` 且 `unpriced_candidates>0` 时文本会明确提示其他候选可能更合适。
 
 同一精确购物篮的不同优惠路径只占一个推荐位，保留最低有效报价。剩余预算仅为预算减应付金额，不把它叫“省了多少钱”；若要比较节省额，必须另外获取同一篮子的无优惠有效报价。

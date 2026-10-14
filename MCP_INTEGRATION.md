@@ -4,6 +4,8 @@
 
 2026-10-13：参赛者在 WorkBuddy 5.7.7（Windows）连接自己的麦当劳 MCP，并提供本轮门店、菜单、套餐详情及算价的会话记录。下表是 **WorkBuddy 报告的实际业务调用**；本仓库不持有 Token，也没有从本地 Python 直接调用这些业务工具。脱敏节选见 [workbuddy.md](workbuddy.md)。
 
+2026-10-14：参赛者再次使用更新后的 Skill；WorkBuddy 报告本地 `plan`/`rank` 均执行，8 个试算候选中仅薯条单点通过价格核验，7 个套餐请求返回 500。该次未取得原始完整工具请求和返回，不能据此诊断 `roundList` 的根因，也不能把单点价格外推至套餐。报告见 [workbuddy.md](workbuddy.md)。
+
 官方Server：`https://mcp.mcd.cn`，Streamable HTTP，Authorization Bearer鉴权。来源：https://github.com/M-China/mcd-mcp-server
 
 | 工具 | 作用 | 当前证据范围 |
