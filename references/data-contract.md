@@ -12,6 +12,10 @@ components列出已经确认的具体组成名称，包括套餐内饮料、固�
 
 selections每项为item_code、quantity（1至10整数）、options对象。保留精确规格和替换选项；单个原子项是面向一人的一份选择，套餐可以有多个组件。coupon_ids仅记录当前门店可用的优惠标识，不在公开文件存真实券码。reference_minor是可缺省的参考标价，只用来安排报价顺序。
 
+当前 `official_price.py` 对未用券套餐提供保守预检：`options.roundList[].round` 只接受已实测的数字轮次机器编码（如 `"1"`），不可把轮次展示名（如“选择主食”）当作编码；每轮选中项只接受 `code`、`quantity`。本版不支持 `modification` 特制，不能自动加入详情中的默认特制值。对其他编码形态或确需特制的商品，应标记为待支持，先从当次 `query-meal-detail` 和工具 schema 核对，不能伪装为已核价。
+
+对 `source=mcp` 的新鲜 plan，可用 `python scripts/official_price.py --plan private/plan.json --output private/requests.json` 预检最多8个候选。结果含 `ready`（候选ID及最小试算请求）和 `blocked`（候选ID及原因）；它只组装请求，不接入官方服务，也不能代替当次工具 schema。超过30分钟的菜单会被拒绝。
+
 所有金额使用整数分。官方若以元为单位，先用Decimal准确转换；无法确定单位时不要填。未取到的营养或价格字段不能填0。
 
 ## plan

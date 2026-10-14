@@ -3,9 +3,12 @@
 The host supplies tool request/response JSON. This module does not call the MCP
 server and cannot independently authenticate a host-provided transcript.
 """
+import argparse
+import json
 from collections import Counter
+from pathlib import Path
 
-from budget import DataError, digest, iso, minor, require, stamp, text
+from budget import DataError, digest, iso, load, minor, require, stamp, text, utcnow
 
 
 def expected_items(candidate):
@@ -19,9 +22,55 @@ def expected_items(candidate):
             item = {'productCode': selection['item_code'],
                     'quantity': selection['quantity']}
             if 'roundList' in options:
-                item['roundList'] = options['roundList']
+                rounds = options['roundList']
+                require(isinstance(rounds, list) and rounds, 'roundList须为非空列表')
+                ids = set()
+                for part in rounds:
+                    require(isinstance(part, dict), '套餐轮次须为对象')
+                    round_id = part.get('round')
+                    # This adapter only supports the numeric IDs observed in
+                    # the successful WorkBuddy price request ("1", "2", "3").
+                    # A display title such as "选择主食" is not an ID.
+                    require(isinstance(round_id, str) and round_id.isascii()
+                            and round_id.isdecimal() and round_id not in ids,
+                            '本适配器仅支持已核验的数字轮次编码，不能传展示名称或重复轮次')
+                    ids.add(round_id)
+                    choices = part.get('comboItemList')
+                    require(isinstance(choices, list) and choices, '套餐轮次缺少选中商品')
+                    for choice in choices:
+                        require(isinstance(choice, dict) and set(choice)=={'code','quantity'},
+                                '本适配器不支持套餐特制或额外选项；不可擅自附加modification')
+                        text(choice['code'], 'comboItemList.code')
+                        require(type(choice['quantity']) is int and choice['quantity'] > 0,
+                                '套餐选项数量无效')
+                item['roundList'] = rounds
             items.append(item)
     return items
+
+
+def prepare_requests(plan, now=None, limit=8):
+    """Prepare up to eight minimal, locally checked price requests; never call MCP."""
+    now = now or utcnow()
+    require(digest({k: v for k, v in plan.items() if k != 'plan_id'}) == plan.get('plan_id'),
+            'plan内容被修改，请重新生成')
+    require(plan.get('source') == 'mcp' and plan.get('service') == 'pickup',
+            '只支持真实到店取餐plan')
+    require(0 <= (now-stamp(plan['fetched_at'])).total_seconds() <= 1800,
+            '菜单已超过30分钟，请重新查询')
+    require(type(limit) is int and 1 <= limit <= 8, '本轮最多预检8个候选')
+    ready, blocked = [], []
+    for candidate in plan['candidates'][:limit]:
+        try:
+            items = expected_items(candidate)
+            ready.append({'candidate_id': candidate['id'], 'request': {
+                'storeCode': plan['store_id'], 'orderType': 1, 'beType': 1,
+                'items': items,
+            }})
+        except DataError as exc:
+            blocked.append({'candidate_id': candidate['id'], 'reason': str(exc)})
+    return {'plan_id': plan['plan_id'], 'selected': min(limit, len(plan['candidates'])),
+            'ready': ready, 'blocked': blocked,
+            'notice': '本地预检，不联网；需按实时工具schema核对后才可逐项调用calculate-price'}
 
 
 def to_quote(plan, candidate, request, response, quoted_at):
@@ -73,3 +122,25 @@ def to_quote(plan, candidate, request, response, quoted_at):
             'tool': 'calculate-price', 'currency': 'CNY', 'store_id': plan['store_id'],
             'service': 'pickup', 'quoted_at': iso(dt), 'status': 'ok',
             'payable_minor': payable}
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description='离线预检最多8个套餐算价请求，不调用MCP')
+    parser.add_argument('--plan', required=True)
+    parser.add_argument('--limit', type=int, default=8)
+    parser.add_argument('--output')
+    args = parser.parse_args(argv)
+    try:
+        result = prepare_requests(load(args.plan), limit=args.limit)
+        content = json.dumps(result, ensure_ascii=False, indent=2) + '\n'
+        if args.output:
+            Path(args.output).write_text(content, encoding='utf-8')
+        else:
+            print(content, end='')
+        return 0
+    except (DataError, OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
+        parser.exit(2, f'预检失败：{exc}\n')
+
+
+if __name__ == '__main__':
+    main()

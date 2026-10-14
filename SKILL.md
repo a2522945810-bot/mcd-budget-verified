@@ -22,6 +22,7 @@ description: 按预算、门店和口味偏好筛选麦当劳一人到店取餐�
 1. 用 `query-nearby-stores` 查门店，按需调用 `query-meals`、`query-meal-detail`。
 2. 用 `query-store-coupons` 查当前门店可用券；只查询，不领券、兑换积分或创建订单。
 3. 确认套餐固定组成、已选替换项、规格、口味和券适用条件。组件不明时不能声称满足排除条件；先查明，无法查明则跳过。
+   套餐轮次的 `round` 必须使用 `query-meal-detail` 返回的机器编码，不得填“选择主食”等展示名称。当前本地算价适配器只接受已实测的数字轮次编码；若详情只给名称或不同格式，停止该候选并报告待核对。未要求特制时不要给商品添加 `modification`，本版适配器也不支持特制项。
 4. 按 `references/data-contract.md` 整理最多12个可选原子项，记录抓取时间和当前门店。原子项可以是单品或已确定组成的套餐；含券项须有准确的券标识。
 5. 运行 `python scripts/budget.py plan --input private/menu.json --budget 25 --exclude 可乐 --include 薯条 --output private/plan.json`。按实际要求增删 `--exclude`、`--include`，多项需求重复传参；内部为文字匹配，先核对同义词与组成。这些是本项目参数，不是麦当劳 API 参数。
 6. 候选过多时先缩小范围；按参考价顺序选最多8个进行本轮报价。参考价只决定尝试顺序，不是最终价格，不据此过滤所有表面超预算的组合。
@@ -30,9 +31,10 @@ description: 按预算、门店和口味偏好筛选麦当劳一人到店取餐�
 ## 获取真实报价并比较
 
 1. 将候选的精确餐品、数量、规格、替换项与券映射到实时 `calculate-price` schema，不将本项目字段原样当官方请求。
+   对未用券的到店自取候选，先运行 `python scripts/official_price.py --plan private/plan.json --output private/requests.json` 做本地预检；只对输出中 `ready` 的请求逐项核价，对 `blocked` 的候选先核实/跳过，不能把未经预检的套餐批量送去核价。生成的请求仅含已核验字段；仍需按实时工具 schema 核对。不要因工具字段可选就自行补特制或餐具选项。
 2. 返回错误、券不适用、金额单位不明或报价购物篮不明时，标记失败。不得自行扣减预计优惠。
 3. 将成功结果按数据契约记录为 quote，绑定本轮plan、候选指纹、门店、取餐方式、报价时间和工具名。只有实际调用成功才填 `source=mcp`。若服务删掉指定商品或优惠，不能当作原候选的成功报价。
-   对未用券的到店自取篮子，可调用 `scripts/official_price.py` 的 `to_quote(plan, candidate, request, response, quoted_at)` 校验实际算价入参与返回。`options.roundList` 须来自已核对的套餐详情；必须用真实调用时间且带时区，不得给旧报价补新时间。此适配器不支持用券路径，也不证明宿主转交数据的来源。
+   对未用券的到店自取篮子，可调用 `scripts/official_price.py` 的 `to_quote(plan, candidate, request, response, quoted_at)` 校验实际算价入参与返回。`options.roundList` 须来自已核对的套餐详情；必须用真实调用时间且带时区，不得给旧报价补新时间。此适配器不支持用券和特制路径，也不证明宿主转交数据的来源。
 4. 运行 `budget.py rank --plan PRIVATE/plan.json --quotes PRIVATE/quotes.json`，只展示通过检查且预算内的结果。
 5. 说明覆盖数：生成多少候选、有效核价几个、还有多少未核价。不得把局部搜索称为全网最低价或绝对最优。本地校验不构成外部JSON来源的密码学认证。
 

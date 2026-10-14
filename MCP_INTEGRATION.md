@@ -6,6 +6,8 @@
 
 2026-10-14：参赛者再次使用更新后的 Skill；WorkBuddy 报告本地 `plan`/`rank` 均执行，8 个试算候选中仅薯条单点通过价格核验，7 个套餐请求返回 500。该次未取得原始完整工具请求和返回，不能据此诊断 `roundList` 的根因，也不能把单点价格外推至套餐。报告见 [workbuddy.md](workbuddy.md)。
 
+同日追加说明：失败的 `9900015602` 请求由 WorkBuddy 从私有文件重建，轮次为展示名称，还增加特制项和可选餐具字段；与前一天成功的数字轮次且无特制请求存在多处差异。本版 `official_price.expected_items` 已加本地预检并仅支持已观察的数字轮次及无特制项，不能据此宣称官方接口只接受这种格式。
+
 官方Server：`https://mcp.mcd.cn`，Streamable HTTP，Authorization Bearer鉴权。来源：https://github.com/M-China/mcd-mcp-server
 
 | 工具 | 作用 | 当前证据范围 |

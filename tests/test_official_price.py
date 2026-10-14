@@ -70,6 +70,24 @@ class WorkBuddyPriceShapeTests(unittest.TestCase):
         with self.assertRaises(b.DataError):
             p.to_quote(self.plan, self.candidate, req, self.response, self.quoted_at)
 
+    def test_preflight_rejects_display_rounds_and_unverified_customizations(self):
+        candidate=copy.deepcopy(self.candidate)
+        rounds=candidate['cart']['offers'][0]['selections'][0]['options']['roundList']
+        rounds[0]['round']='选择主食'
+        with self.assertRaisesRegex(b.DataError,'展示名称'):
+            p.expected_items(candidate)
+        rounds[0]['round']='1'
+        rounds[0]['comboItemList'][0]['modification']={'values':[{'code':'100168','key':'0-1','quantity':1}]}
+        with self.assertRaisesRegex(b.DataError,'modification'):
+            p.expected_items(candidate)
+
+    def test_preflight_prepares_minimal_request_without_extras(self):
+        result=p.prepare_requests(self.plan,now=self.when)
+        self.assertEqual(result['selected'],1)
+        self.assertEqual(len(result['ready']),1)
+        self.assertEqual(result['ready'][0]['request'],self.request)
+        self.assertEqual(result['blocked'],[])
+
     def test_published_redacted_record_replays_as_historical(self):
         result, expired = replay.replay(b.stamp('2026-10-14T10:00:00+08:00'))
         self.assertEqual(result['results'][0]['payable_minor'], 2290)

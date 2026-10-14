@@ -24,7 +24,7 @@ python scripts/replay_workbuddy.py
 
 项目的[参赛申请 #624](https://github.com/M-China/mcd-developer-innovation-challenge/issues/624)已获官方回复成功参赛。项目源码、使用范围和测试均公开；Star代表你觉得项目有用或想持续关注，不影响你使用代码。
 
-**当前为0.2开发版：Skill、离线计算、连接诊断和未用券到店自取算价适配已实现。10月14日 WorkBuddy 报告确实运行了 `plan`、`rank` 和真实算价，但本轮 31 个候选仅 1 个获得有效报价；7 个套餐试算报 500。详见 [实测记录与证据边界](workbuddy.md)。完整套餐配餐仍待验收。**
+**当前为0.2开发版：Skill、离线计算、连接诊断和未用券到店自取算价适配已实现。10月14日 WorkBuddy 报告确实运行了 `plan`、`rank` 和真实算价，但本轮 31 个候选仅 1 个获得有效报价；7 个套餐试算报 500。随后重建的失败请求显示轮次展示名、特制项和餐具字段与前一天成功请求不同；原因未定，现已增加本地预检避免再次批量提交未经确认的轮次名称。详见 [实测记录与证据边界](workbuddy.md)。完整套餐配餐仍待验收。**
 
 ## 使用者会得到什么
 
@@ -50,7 +50,15 @@ python -m unittest discover -s tests -v
 
 按照 [连接指南](references/connect.md) 在支持MCP与本地Skill的客户端连接官方服务并加载本目录。宿主AI按SKILL.md调用真实工具、读取schema、规范化数据，再调用脚本检查。
 
-第一版并非全自动独立点餐应用：自然语言理解、菜单字段映射和调用编排依赖宿主AI；预算、偏好匹配、候选枚举、报价绑定和排序为确定性Python代码。`official_price.py`已针对本次 WorkBuddy 转交的未用券算价结构实现精确购物篮校验，但其他场景与优惠用券尚待验证。
+第一版并非全自动独立点餐应用：自然语言理解、菜单字段映射和调用编排依赖宿主AI；预算、偏好匹配、候选枚举、报价绑定和排序为确定性Python代码。`official_price.py` 可在实际调用前预检并生成最多8个最小算价请求，也可对 WorkBuddy 转交的未用券返回核对购物篮；其他场景、特制及优惠用券尚待验证。
+
+生成 `private/plan.json` 后先运行：
+
+```bash
+python scripts/official_price.py --plan private/plan.json --output private/requests.json
+```
+
+只对 `requests.json` 中的 `ready` 候选调用官方算价；若套餐轮次是展示名称或带未核实的特制项，会进入 `blocked`。本地预检不联网，输出仍须与当次真实工具 schema 比对。
 
 ## 文件
 
@@ -58,7 +66,7 @@ python -m unittest discover -s tests -v
 |---|---|
 | SKILL.md | 客户端运行步骤及触发说明 |
 | scripts/budget.py | 候选生成、报价检查、演示 |
-| scripts/official_price.py | 未用券到店自取算价结构校验和内部报价转换 |
+| scripts/official_price.py | 未用券到店自取请求预检、算价结构校验和内部报价转换 |
 | scripts/replay_workbuddy.py | 读取脱敏历史记录，复查一笔算价和预算余额 |
 | scripts/connect_mcp.py | 初始化并发现官方工具定义 |
 | tests/test_budget.py | 规则边界与模拟协议测试 |
@@ -87,4 +95,4 @@ source字段和购物篮摘要用于检测混用、误配和陈旧数据，不�
 
 ## 当前下一步
 
-根据 10 月 14 日 WorkBuddy 的部分运行，取得套餐失败请求、响应和实际工具 schema 的脱敏记录，核对 `roundList` 参数结构后再试；提高有效核价覆盖。当前仓库提供历史调用节选和离线测试，不能将过期价格当作实时报价。不要将账号凭证、完整券码和个人信息提交至公共仓库。
+从当次 `query-meal-detail` 核对套餐真实轮次编码，再对一个套餐使用无额外特制的精确购物篮单独试算；成功后才扩大有效核价覆盖。当前仓库提供历史调用节选和离线测试，不能将过期价格当作实时报价。不要将账号凭证、完整券码和个人信息提交至公共仓库。
