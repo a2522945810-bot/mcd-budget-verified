@@ -22,7 +22,7 @@ selections每项为item_code、quantity（1至10整数）、options对象。保�
 python scripts/budget.py plan --input private/menu.json --budget 25 --exclude 可乐 --include 薯条 --output private/plan.json
 ```
 
-候选由一份主餐或套餐，搭配最多一份配餐和一份饮料组成。同券不得在一个候选内重复；组合券能否叠加最终由官方报价决定。每个候选含id与cart，plan有plan_id；ID绑定数据来源、门店、预算、偏好、时间及精确选项。每轮最多150候选；本轮仅尝试部分时必须披露覆盖数。reference_minor再高也不能代替真实核价。
+候选可以是一份主餐或套餐，搭配最多一份小食和一份饮料；也允许一份小食单点或搭配一份饮料（轻食组合）。饮料单点不生成候选。同券不得在一个候选内重复；组合券能否叠加最终由官方报价决定。每个候选含id与cart，plan有plan_id；ID绑定数据来源、门店、预算、偏好、时间及精确选项。每轮最多150候选；本轮仅尝试部分时必须披露覆盖数。reference_minor再高也不能代替真实核价。
 
 ## quotes
 

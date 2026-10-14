@@ -25,6 +25,7 @@ description: 按预算、门店和口味偏好筛选麦当劳一人到店取餐�
 4. 按 `references/data-contract.md` 整理最多12个可选原子项，记录抓取时间和当前门店。原子项可以是单品或已确定组成的套餐；含券项须有准确的券标识。
 5. 运行 `python scripts/budget.py plan --input private/menu.json --budget 25 --exclude 可乐 --include 薯条 --output private/plan.json`。按实际要求增删 `--exclude`、`--include`，多项需求重复传参；内部为文字匹配，先核对同义词与组成。这些是本项目参数，不是麦当劳 API 参数。
 6. 候选过多时先缩小范围；按参考价顺序选最多8个进行本轮报价。参考价只决定尝试顺序，不是最终价格，不据此过滤所有表面超预算的组合。
+   候选可以是一份主餐/套餐，也可以是一份小食或小食加饮料；不要因轻食没有主餐就将其排除。饮料单点不在本版候选范围。
 
 ## 获取真实报价并比较
 
@@ -52,6 +53,7 @@ description: 按预算、门店和口味偏好筛选麦当劳一人到店取餐�
 - `scripts/budget.py`：候选枚举、偏好筛选、报价绑定与时效校验、离线演示。
 - `scripts/connect_mcp.py`：固定官方服务的初始化与工具发现，不获取账号数据；真实兼容性待授权验证。
 - `scripts/official_price.py`：与本次 WorkBuddy 会话的未用券到店自取算价结构对应的校验器；不直接联网。
+- `scripts/replay_workbuddy.py`：复查公开的脱敏历史算价记录，不产生实时价格。
 - `references/data-contract.md`：内部数据格式。
 - `references/connect.md`：连接、排错、真人验收步骤。
 - `README.md`、`MCP_INTEGRATION.md`：参赛说明和实现状态。

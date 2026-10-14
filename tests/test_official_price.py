@@ -7,6 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 import budget as b
 import official_price as p
+import replay_workbuddy as replay
 
 
 class WorkBuddyPriceShapeTests(unittest.TestCase):
@@ -68,6 +69,12 @@ class WorkBuddyPriceShapeTests(unittest.TestCase):
         req = {**self.request, 'couponId': 'not-for-this-path'}
         with self.assertRaises(b.DataError):
             p.to_quote(self.plan, self.candidate, req, self.response, self.quoted_at)
+
+    def test_published_redacted_record_replays_as_historical(self):
+        result, expired = replay.replay(b.stamp('2026-10-14T10:00:00+08:00'))
+        self.assertEqual(result['results'][0]['payable_minor'], 2290)
+        self.assertEqual(result['results'][0]['remaining_minor'], 210)
+        self.assertTrue(expired)
 
 
 if __name__ == '__main__':

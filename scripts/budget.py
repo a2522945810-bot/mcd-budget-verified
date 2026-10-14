@@ -142,7 +142,11 @@ def make_plan(menu, budget, excludes=(), now=None, includes=()):
             if not all(any(normalized(w) in label for label in labels) for w in included):
                 continue
             kinds = [x['kind'] for x in group]
-            if sum(k in ('main', 'meal') for k in kinds) != 1 or kinds.count('side') > 1 or kinds.count('drink') > 1:
+            mains = sum(k in ('main', 'meal') for k in kinds)
+            # A side and drink can be a useful light choice under a tight budget.
+            # Keep at least one food item; drinks alone are outside this Skill.
+            if (mains > 1 or kinds.count('side') > 1 or kinds.count('drink') > 1
+                    or (mains == 0 and kinds.count('side') != 1)):
                 continue
             coupons = [c for x in group for c in x['coupon_ids']]
             if len(set(coupons)) != len(coupons): continue
@@ -155,7 +159,7 @@ def make_plan(menu, budget, excludes=(), now=None, includes=()):
     require(len(candidates)<=MAX_CANDIDATES, '候选超过150个，请缩小餐品范围')
     candidates.sort(key=lambda c: (c['reference_minor'] is None, c['reference_minor'] or 0, c['id']))
     plan = {**scope, 'candidates': candidates, 'skipped': skipped,
-            'scope_note': '最多12个已核对组成的原子项；一份主餐/套餐，可加一份配餐和一份饮料；不覆盖全菜单或全部替换方式'}
+            'scope_note': '最多12个已核对组成的原子项；主餐/套餐可加一份小食和一份饮料，也可只选小食或小食加饮料；不覆盖全菜单或全部替换方式'}
     plan['plan_id'] = digest(plan)
     return plan
 

@@ -32,7 +32,7 @@ class BudgetTests(unittest.TestCase):
         self.assertEqual(len(result['rejected_quotes']),1)
 
     def test_no_cola_in_fixed_meals(self):
-        self.assertEqual(len(self.plan['candidates']),8)
+        self.assertEqual(len(self.plan['candidates']),10)
         self.assertNotIn('可乐',json.dumps(self.plan['candidates'],ensure_ascii=False))
         self.assertEqual(len(self.plan['skipped']),3)
 
@@ -48,12 +48,20 @@ class BudgetTests(unittest.TestCase):
 
     def test_never_prune_on_reference_price(self):
         plan=b.make_plan(self.menu,100,['可乐'],self.now)
-        self.assertEqual(len(plan['candidates']),8)
+        self.assertEqual(len(plan['candidates']),10)
+
+    def test_light_food_and_drink_without_main(self):
+        plan=b.make_plan(self.menu,2500,['可乐'],self.now,['薯条'])
+        light=[c for c in plan['candidates'] if
+               {x['offer_id'] for x in c['cart']['offers']} == {'demo-side','demo-water'}]
+        self.assertEqual(len(light),1)
+        self.assertFalse(any({x['offer_id'] for x in c['cart']['offers']} == {'demo-water'}
+                             for c in plan['candidates']))
 
     def test_incomplete_quotes_do_not_claim_no_meal(self):
         result=b.rank(self.plan,{'quotes':[self.quote(payable_minor=3000)]},self.now)
         self.assertEqual(result['status'],'insufficient_quotes')
-        self.assertEqual(result['unpriced_candidates'],7)
+        self.assertEqual(result['unpriced_candidates'],9)
 
     def test_all_over_budget(self):
         result=b.rank(self.plan,{'quotes':[self.quote(c,payable_minor=3000) for c in self.plan['candidates']]},self.now)
@@ -65,7 +73,8 @@ class BudgetTests(unittest.TestCase):
         self.assertEqual(b.money('0.29'),29)
 
     def test_different_coupon_same_basket_deduplication(self):
-        bare=[c for c in self.plan['candidates'] if len(c['cart']['offers'])==1]
+        bare=[c for c in self.plan['candidates'] if len(c['cart']['offers'])==1 and
+              c['cart']['offers'][0]['offer_id'].startswith('demo-main')]
         self.assertEqual(len(bare),2)
         result=b.rank(self.plan,{'quotes':[self.quote(bare[0],payable_minor=1800),self.quote(bare[1],payable_minor=1300)]},self.now)
         self.assertEqual(len(result['results']),1)

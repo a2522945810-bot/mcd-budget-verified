@@ -26,6 +26,7 @@ list-nutrition-foods列在诊断白名单供后续研究，但本版不实现营
 
 - budget.py可独立运行合成演示并检查规范化报价；它不直接访问麦当劳服务。
 - official_price.py核对一份未用券、到店自取的算价请求与精确购物篮，读取分单位价格并生成内部报价；它处理的是宿主提供的JSON，不向服务器发请求，也不能证明转交文本的真实性。
+- replay_workbuddy.py从公开的脱敏历史回述重建一个本地候选并执行购物篮核对，便于复查预算余额；重建的菜单时间仅供复核，不是原始菜单查询的日志。
 - connect_mcp.py实现initialize、notifications/initialized、tools/list及会话关闭；它只发现工具定义，不查询用户菜单、优惠和订单。
 - 实际业务调用由支持MCP的宿主AI按SKILL.md编排。本轮 WorkBuddy 会话提供了真实账号环境下的调用报告；宿主回述的原始JSON尚未与独立服务端日志核对，见证据边界。
 
